@@ -98,6 +98,7 @@ function App() {
             <input type="text" className="form-control" value={edad} aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default"
               onChange={(event) => {
                 setEdad(event.target.value)
+                
               }} />
           </div>
           <div className="input-group mb-3">
