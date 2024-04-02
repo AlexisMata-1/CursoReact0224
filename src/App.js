@@ -3,6 +3,11 @@ import { useState } from "react"
 import Axios from "axios";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
+
+const noti = withReactContent(Swal);
+
 function App() {
 
   const [nombre, setNombre] = useState("");
@@ -27,13 +32,19 @@ function App() {
       getEmpleados();
       limpiarCampos();
 
-      alert("Empleado registrado");
+      noti.fire({
+        title: "<strong>Registro exitoso!</strong>",
+        html: <i>El empleado <strong>{nombre} </strong>fue registrado</i>,
+        icon: 'success',
+        confirmButtonText: 'Ok'
+      })
+
     });
   }
 
   const update = () => {
     Axios.put("http://localhost:3001/update", {
-      id:id,
+      id: id,
       nombre: nombre,
       edad: edad,
       pais: pais,
@@ -42,11 +53,52 @@ function App() {
     }).then(() => {
       getEmpleados();
       limpiarCampos();
-      alert("Empleado actualizado");
+      noti.fire({
+        title: "<strong>Actualización exitosa!</strong>",
+        html: <i>El empleado <strong>{nombre} </strong>fue actualizado</i>,
+        icon: 'success',
+        confirmButtonText: 'Ok'
+      })
     });
   }
 
-  const limpiarCampos =()=>{
+  const deleteEmple = (val) => {
+
+    noti.fire({
+      title: "Estas a punto de eliminar un usuario",
+      html: "Se eliminará el usuario <strong>" + val.nombre +"</strong>",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Si deseo borrarlo"
+    }).then((result) => {
+
+      if (result.isConfirmed) {
+        Axios.delete(`http://localhost:3001/delete/${val.id}`).then(() => {
+          getEmpleados();
+          limpiarCampos();
+          noti.fire({
+            title: "<strong>Eliminacion exitosa!</strong>",
+            html: <i>El empleado <strong>{val.nombre} </strong>fue eliminado</i>,
+            icon: 'success',
+            confirmButtonText: 'Ok'
+          })
+        }).catch(function(error){
+          noti.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "No se pudo eliminar el empleado",
+            footer: error.message
+          });
+        });
+      }
+    });
+
+
+  }
+
+  const limpiarCampos = () => {
     setAnios("");
     setCargo("");
     setEdad("");
@@ -55,7 +107,7 @@ function App() {
     setPais("");
     setEditar(false);
 
-    
+
   }
   const editarEmpleado = (val) => {
     setEditar(true);
@@ -75,7 +127,7 @@ function App() {
   }
 
 
-  
+
   getEmpleados();
 
   return (
@@ -98,7 +150,7 @@ function App() {
             <input type="text" className="form-control" value={edad} aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default"
               onChange={(event) => {
                 setEdad(event.target.value)
-                
+
               }} />
           </div>
           <div className="input-group mb-3">
@@ -170,7 +222,9 @@ function App() {
                         editarEmpleado(val);
                       }}
                       className="btn btn-info">Editar</button>
-                    <button type="button" className="btn btn-danger">Elimnar</button>
+                    <button type="button" onClick={() => {
+                      deleteEmple(val);
+                    }} className="btn btn-danger">Elimnar</button>
                   </div>
                 </td>
               </tr>
